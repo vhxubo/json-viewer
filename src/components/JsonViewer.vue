@@ -18,7 +18,10 @@ const value = ref(``);
 const func = (val) => new Function("return " + val)();
 onMounted(async () => {
   const text = await navigator.clipboard.readText();
-  const data = func(text);
+  let data = func(text);
+  if (typeof data === "string") {
+    data = JSONParse(data);
+  }
   const resetData = deepReset(data);
   value.value = JSON.stringify(resetData, null, 2);
 });
