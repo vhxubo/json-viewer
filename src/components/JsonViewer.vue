@@ -47,9 +47,9 @@ const deepReset = (data: any) => {
         (value.startsWith("[") && value.endsWith("]"))
       ) {
         value = JSONParse(value);
-        console.log(value);
+        // console.log(value);
         data[key] = value;
-        console.log(key, value, "ee");
+        // console.log(key, value, "ee");
         return deepReset(value);
       }
     }
