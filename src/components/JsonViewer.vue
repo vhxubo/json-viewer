@@ -3,7 +3,6 @@
     class="code-mirror"
     basic
     :lang="json()"
-    :linter="jsonParseLinter"
     readonly
     v-model="value"
   >
@@ -11,20 +10,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { json, jsonParseLinter } from "@codemirror/lang-json";
+import { ref, onMounted, nextTick } from "vue";
+import { json } from "@codemirror/lang-json";
 import CodeMirror from "vue-codemirror6";
 
 const value = ref<string>(``);
 const func = (val: string) => new Function("return " + val)();
 onMounted(async () => {
-  const text = await navigator.clipboard.readText();
-  let data = func(text);
-  if (typeof data === "string") {
-    data = JSONParse(data);
+  await nextTick();
+  try {
+    const permission = await navigator.permissions.query({
+      name: "clipboard-read" as PermissionName,
+    });
+    if (permission.state === "denied") {
+      throw new Error("Not allowed to read clipboard.");
+    }
+    const text = await navigator.clipboard.readText();
+    let data = func(text);
+    if (typeof data === "string") {
+      data = JSONParse(data);
+    }
+    const resetData = deepReset(data);
+    value.value = JSON.stringify(resetData, null, 2);
+  } catch (error) {
+    alert(error);
   }
-  const resetData = deepReset(data);
-  value.value = JSON.stringify(resetData, null, 2);
 });
 const JSONParse = (value: string) => {
   if (value && typeof value === "string") {
